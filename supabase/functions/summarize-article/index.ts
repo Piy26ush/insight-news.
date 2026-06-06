@@ -206,8 +206,15 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Skip if already summarized
-    if (article.summary && article.summary.length > 50) {
+    // Skip if already summarized (but don't skip if it is just a Google News HTML list)
+    const isHtmlList = article.summary && (
+      article.summary.includes("<ol>") ||
+      article.summary.includes("&lt;ol&gt;") ||
+      article.summary.includes("<li>") ||
+      article.summary.includes("&lt;li&gt;")
+    );
+
+    if (article.summary && article.summary.length > 50 && !isHtmlList) {
       console.log("[summarize] Article already has a good summary, skipping");
       return new Response(
         JSON.stringify({ status: "skipped", reason: "already summarized" }),

@@ -10,8 +10,79 @@ const importanceStyles: Record<FeedItem["importance"], { dot: string; label: str
   low:      { dot: "bg-muted-foreground", label: "Low", text: "text-muted-foreground" },
 };
 
+function parseGoogleNewsSummary(summary: string | null) {
+  if (!summary) return { text: "", related: [] };
+
+  // Unescape common HTML entities
+  let decoded = summary
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ");
+
+  const olIndex = decoded.indexOf("<ol>");
+
+  // Check if it looks like an HTML list of articles
+  if (olIndex === -1 && !decoded.includes("<li>")) {
+    return {
+      text: summary,
+      related: []
+    };
+  }
+
+  // Extract any text before the <ol> tag
+  let text = "";
+  if (olIndex > 0) {
+    text = decoded.substring(0, olIndex).replace(/<[^>]*>/g, "").trim();
+  }
+
+  // Extract list items <li>...</li>
+  const liRegex = /<li>([\s\S]*?)<\/li>/gi;
+  const related: Array<{ url: string; title: string; source: string }> = [];
+  let match;
+
+  while ((match = liRegex.exec(decoded)) !== null) {
+    const liContent = match[1];
+    
+    // Extract href
+    const hrefMatch = liContent.match(/href="([^"]*)"/i);
+    const url = hrefMatch ? hrefMatch[1] : "";
+    
+    // Extract title (text inside the <a> tag)
+    const titleMatch = liContent.match(/<a[^>]*>([\s\S]*?)<\/a>/i);
+    let title = titleMatch ? titleMatch[1].trim() : "";
+    // Clean up any nested HTML in title
+    title = title.replace(/<[^>]*>/g, "");
+
+    // Extract source (text inside the <font> tag)
+    const sourceMatch = liContent.match(/<font[^>]*>([\s\S]*?)<\/font>/i);
+    const source = sourceMatch ? sourceMatch[1].trim() : "";
+
+    if (url && title) {
+      related.push({ url, title, source });
+    }
+  }
+
+  // If we couldn't parse any, return it as normal text (stripping HTML tags)
+  if (related.length === 0) {
+    return {
+      text: decoded.replace(/<[^>]*>/g, "").trim(),
+      related: []
+    };
+  }
+
+  return {
+    text,
+    related
+  };
+}
+
 export function FeedCard({ item }: { item: FeedItem }) {
   const imp = importanceStyles[item.importance];
+  const parsed = parseGoogleNewsSummary(item.summary);
+
   return (
     <article className="group relative rounded-xl glass-card p-4 transition hover:border-primary/30 hover:shadow-glow">
       <div className="flex items-start gap-3">
@@ -47,7 +118,37 @@ export function FeedCard({ item }: { item: FeedItem }) {
               item.headline
             )}
           </h3>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground line-clamp-2">{item.summary}</p>
+          {parsed.text && (
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground line-clamp-2">{parsed.text}</p>
+          )}
+
+          {parsed.related.length > 0 && (
+            <div className="mt-3 pt-2 border-t border-border/40 space-y-1.5">
+              <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider block">
+                Related Coverage
+              </span>
+              <ul className="space-y-1">
+                {parsed.related.map((rel, idx) => (
+                  <li key={idx} className="text-xs flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary/40 shrink-0" />
+                    <a
+                      href={rel.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition line-clamp-1 hover:underline flex-1"
+                    >
+                      {rel.title}
+                      {rel.source && (
+                        <span className="text-[10px] text-muted-foreground/70 font-medium">
+                          {" "}· {rel.source}
+                        </span>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="mt-3 flex items-center gap-1">
             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground">
