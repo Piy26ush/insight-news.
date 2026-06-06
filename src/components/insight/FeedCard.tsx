@@ -1,4 +1,4 @@
-import { Bookmark, Share2 } from "lucide-react";
+import { Bookmark, Share2, Sparkles, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { FeedItem } from "@/lib/mock-data";
@@ -23,7 +23,12 @@ export function FeedCard({ item }: { item: FeedItem }) {
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider flex-wrap">
+            {item.url && (
+              <span className="inline-flex items-center gap-0.5 rounded bg-primary/10 px-1 py-0.5 text-[8px] font-bold text-primary animate-pulse">
+                <Sparkles className="h-2 w-2" /> AI Enriched
+              </span>
+            )}
             <span className="text-primary">{item.category}</span>
             <span className="text-border">·</span>
             <span className="text-muted-foreground">{item.source}</span>
@@ -33,7 +38,14 @@ export function FeedCard({ item }: { item: FeedItem }) {
           </div>
 
           <h3 className="mt-1.5 text-[15px] font-semibold leading-snug text-foreground group-hover:text-primary transition">
-            {item.headline}
+            {item.url ? (
+              <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:underline inline-flex items-center gap-1.5 align-middle">
+                <span>{item.headline}</span>
+                <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-muted-foreground" />
+              </a>
+            ) : (
+              item.headline
+            )}
           </h3>
           <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground line-clamp-2">{item.summary}</p>
 

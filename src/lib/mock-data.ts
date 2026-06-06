@@ -9,6 +9,7 @@ export interface FeedItem {
   summary: string;
   importance: Importance;
   score: number;
+  url?: string;
 }
 
 export interface MarketTick {
@@ -38,7 +39,7 @@ export interface ImportantEvent {
 
 export const breakingTicker = [
   { tag: "BREAKING", text: "Fed signals possible rate pause as inflation cools to 2.1%", time: "2m" },
-  { tag: "MARKETS", text: "Nifty 50 crosses 26,500 in record-breaking session", time: "8m" },
+  { tag: "MARKETS", text: "Nifty 50 crosses 23,300 in record-breaking session", time: "8m" },
   { tag: "AI", text: "OpenAI unveils GPT-6 with native agentic reasoning", time: "14m" },
   { tag: "SPACE", text: "ISRO's Gaganyaan crew capsule clears final abort test", time: "21m" },
   { tag: "GEOPOLITICS", text: "G20 leaders agree on global AI safety framework in Delhi", time: "33m" },
@@ -159,14 +160,14 @@ export const globalSnapshots: RegionSnapshot[] = [
 ];
 
 export const marketTicks: MarketTick[] = [
-  { symbol: "NIFTY",  name: "Nifty 50",   price: 26512.40, change: 184.20, changePct: 0.70 },
-  { symbol: "SENSEX", name: "Sensex",     price: 86420.15, change: 612.85, changePct: 0.71 },
-  { symbol: "NDX",    name: "Nasdaq",     price: 21840.92, change: -98.40, changePct: -0.45 },
-  { symbol: "DJI",    name: "Dow Jones",  price: 44218.77, change: 122.05, changePct: 0.28 },
-  { symbol: "GOLD",   name: "Gold",       price: 2684.30,  change: 18.40,  changePct: 0.69, currency: "$/oz" },
-  { symbol: "SILVER", name: "Silver",     price: 31.22,    change: -0.18,  changePct: -0.57, currency: "$/oz" },
-  { symbol: "CRUDE",  name: "Crude Oil",  price: 71.84,    change: -1.42,  changePct: -1.94, currency: "$/bbl" },
-  { symbol: "USDINR", name: "USD / INR",  price: 84.12,    change: 0.06,   changePct: 0.07 },
+  { symbol: "NIFTY",  name: "Nifty 50",   price: 23290.15, change: 120.40, changePct: 0.52 },
+  { symbol: "SENSEX", name: "Sensex",     price: 76693.36, change: 393.20, changePct: 0.51 },
+  { symbol: "NDX",    name: "Nasdaq",     price: 19000.50, change: -45.10, changePct: -0.24 },
+  { symbol: "DJI",    name: "Dow Jones",  price: 38886.17, change: 75.50, changePct: 0.19 },
+  { symbol: "GOLD",   name: "Gold",       price: 2325.20,  change: 12.10,  changePct: 0.52, currency: "$/oz" },
+  { symbol: "SILVER", name: "Silver",     price: 29.45,    change: -0.15,  changePct: -0.51, currency: "$/oz" },
+  { symbol: "CRUDE",  name: "Crude Oil",  price: 75.53,    change: -0.85,  changePct: -1.11, currency: "$/bbl" },
+  { symbol: "USDINR", name: "USD / INR",  price: 83.52,    change: 0.04,   changePct: 0.05 },
 ];
 
 export const techItems = [

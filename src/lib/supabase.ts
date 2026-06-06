@@ -428,6 +428,7 @@ export function mapArticleToFeedItem(article: Article): FeedItem {
     summary: article.summary || "No summary available.",
     importance,
     score,
+    url: article.url,
   };
 }
 

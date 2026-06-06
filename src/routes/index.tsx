@@ -82,7 +82,7 @@ function Dashboard() {
       {/* Two-column live feed + side rail */}
       <div className="grid lg:grid-cols-3 gap-6">
         <section className="lg:col-span-2">
-          <SectionHeader live eyebrow="Live feed" title="Intelligence stream" description="Twitter-style chronological feed, scored for importance." />
+          <SectionHeader live eyebrow="Live feed" title="Intelligence stream" description="Twitter-style chronological feed, scored for importance." to="/breaking" />
           <div className="space-y-3">
             {feed.map((f) => <FeedCard key={f.id} item={f} />)}
           </div>
@@ -94,7 +94,7 @@ function Dashboard() {
             <TrendingTopics />
           </section>
           <section>
-            <SectionHeader eyebrow="Market center" title="Markets, live" />
+            <SectionHeader eyebrow="Market center" title="Markets, live" to="/markets" />
             <MarketCenter />
           </section>
         </aside>
@@ -109,11 +109,11 @@ function Dashboard() {
       {/* Tech + Science */}
       <div className="grid lg:grid-cols-2 gap-6">
         <section>
-          <SectionHeader eyebrow="Technology & AI" title="What's shipping" />
+          <SectionHeader eyebrow="Technology & AI" title="What's shipping" to="/technology" />
           <TechCards />
         </section>
         <section>
-          <SectionHeader eyebrow="Science & discovery" title="From the frontier" />
+          <SectionHeader eyebrow="Science & discovery" title="From the frontier" to="/science" />
           <ScienceCards />
         </section>
       </div>
@@ -121,7 +121,7 @@ function Dashboard() {
       {/* Vehicles + Important events */}
       <div className="grid lg:grid-cols-3 gap-6">
         <section>
-          <SectionHeader eyebrow="Vehicles & mobility" title="On the move" />
+          <SectionHeader eyebrow="Vehicles & mobility" title="On the move" to="/vehicles" />
           <VehicleList />
         </section>
         <section className="lg:col-span-2">
@@ -137,3 +137,4 @@ function Dashboard() {
     </div>
   );
 }
+

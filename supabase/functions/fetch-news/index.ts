@@ -114,14 +114,61 @@ function stripHtml(html: string): string {
 // ============================================================================
 
 const RSS_FEEDS = [
-  { name: "BBC Tech", url: "https://feeds.bbci.co.uk/news/technology/rss.xml" },
+  { name: "Google News Tech", url: "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en" },
+  { name: "Google News Science", url: "https://news.google.com/rss/headlines/section/topic/SCIENCE?hl=en-US&gl=US&ceid=US:en" },
+  { name: "Google News Business", url: "https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-US&gl=US&ceid=US:en" },
+  { name: "Google News World", url: "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en" },
   { name: "TechCrunch", url: "https://techcrunch.com/feed/" },
   { name: "NASA", url: "https://www.nasa.gov/rss/dyn/breaking_news.rss" },
-  { name: "Reuters World", url: "https://feeds.reuters.com/reuters/worldNews" },
-  { name: "Ars Technica", url: "https://feeds.arstechnica.com/arstechnica/index" },
 ];
 
-const RSS2JSON_BASE = "https://api.rss2json.com/v1/api.json";
+function parseRssXml(xmlText: string): Array<{
+  title: string;
+  link: string;
+  description: string;
+  pubDate: string;
+  image: string | null;
+}> {
+  const items: any[] = [];
+  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+  let match;
+  while ((match = itemRegex.exec(xmlText)) !== null) {
+    const content = match[1];
+
+    const getTagValue = (tag: string) => {
+      const cdataRegex = new RegExp(`<${tag}>(?:<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>|([\\s\\S]*?))</${tag}>`);
+      const m = content.match(cdataRegex);
+      if (m) return (m[1] || m[2] || "").trim();
+      return "";
+    };
+
+    const title = getTagValue("title");
+    const link = getTagValue("link");
+    const description = getTagValue("description");
+    const pubDate = getTagValue("pubDate");
+
+    let image: string | null = null;
+    const mediaMatch = content.match(/<media:content[^>]*url="([^"]*)"/i);
+    const enclosureMatch = content.match(/<enclosure[^>]*url="([^"]*)"/i);
+    const imgTagMatch = content.match(/<img[^>]*src="([^"]*)"/i);
+    
+    if (enclosureMatch) image = enclosureMatch[1];
+    else if (mediaMatch) image = mediaMatch[1];
+    else if (imgTagMatch) image = imgTagMatch[1];
+
+    if (title && link) {
+      items.push({
+        title,
+        link,
+        description,
+        pubDate,
+        image
+      });
+    }
+  }
+  return items;
+}
+
 
 // ============================================================================
 // GNews fetch categories
@@ -206,22 +253,17 @@ Deno.serve(async (req: Request) => {
     // -----------------------------------------------------------------------
     for (const feed of RSS_FEEDS) {
       try {
-        const rssUrl = `${RSS2JSON_BASE}?rss_url=${encodeURIComponent(feed.url)}`;
-        const response = await fetch(rssUrl);
+        const response = await fetch(feed.url);
 
         if (!response.ok) {
           errors.push(`RSS ${feed.name}: HTTP ${response.status}`);
           continue;
         }
 
-        const data: RSSJsonResponse = await response.json();
+        const xmlText = await response.text();
+        const items = parseRssXml(xmlText);
 
-        if (data.status !== "ok" || !data.items) {
-          errors.push(`RSS ${feed.name}: Bad response status`);
-          continue;
-        }
-
-        for (const item of data.items) {
+        for (const item of items) {
           allArticles.push({
             title: item.title,
             summary: stripHtml(item.description) || null,
@@ -230,11 +272,11 @@ Deno.serve(async (req: Request) => {
             category: classifyCategory(item.title, item.description),
             sentiment: null,
             published_at: item.pubDate,
-            image_url: item.thumbnail || item.enclosure?.link || null,
+            image_url: item.image,
           });
         }
 
-        console.log(`[fetch-news] RSS ${feed.name}: ${data.items.length} articles`);
+        console.log(`[fetch-news] RSS ${feed.name}: ${items.length} articles`);
 
         // Track RSS calls too (for monitoring, no rate limit needed)
         await supabase.rpc("increment_api_calls", { p_source: "rss" });

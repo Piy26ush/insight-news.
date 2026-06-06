@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 interface Props {
@@ -7,9 +8,10 @@ interface Props {
   description?: string;
   action?: ReactNode;
   live?: boolean;
+  to?: string;
 }
 
-export function SectionHeader({ eyebrow, title, description, action, live }: Props) {
+export function SectionHeader({ eyebrow, title, description, action, live, to }: Props) {
   return (
     <div className="flex items-end justify-between gap-4 mb-3">
       <div>
@@ -23,9 +25,15 @@ export function SectionHeader({ eyebrow, title, description, action, live }: Pro
         {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
       {action ?? (
-        <button className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition">
-          View all <ArrowRight className="h-3 w-3" />
-        </button>
+        to ? (
+          <Link to={to} className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition">
+            View all <ArrowRight className="h-3 w-3" />
+          </Link>
+        ) : (
+          <button className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition">
+            View all <ArrowRight className="h-3 w-3" />
+          </button>
+        )
       )}
     </div>
   );
