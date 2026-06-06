@@ -436,12 +436,30 @@ Deno.serve(async (req: Request) => {
     const now = new Date();
     const istTime = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
     const istHour = istTime.getUTCHours();
-    const skipGNews = istHour < 12;
+    let skipGNews = istHour < 12;
 
     // -----------------------------------------------------------------------
-    // 1. Fetch from GNews (Conditional on Time + Quota)
+    // 1. Fetch from GNews (Conditional on Time + Quota + 50-minute throttling)
     // -----------------------------------------------------------------------
     const gnewsApiKey = Deno.env.get("GNEWS_API_KEY");
+
+    if (gnewsApiKey && !skipGNews) {
+      const todayStr = now.toISOString().split("T")[0];
+      const { data: lastCallData } = await supabase
+        .from("api_call_log")
+        .select("last_called_at")
+        .eq("source", "gnews")
+        .eq("call_date", todayStr)
+        .maybeSingle();
+
+      if (lastCallData && lastCallData.last_called_at) {
+        const timeDiff = Date.now() - new Date(lastCallData.last_called_at).getTime();
+        if (timeDiff < 50 * 60 * 1000) {
+          console.log(`[fetch-news] GNews called ${Math.round(timeDiff / 60000)}m ago — skipping GNews this cycle to throttle calls`);
+          skipGNews = true;
+        }
+      }
+    }
 
     if (gnewsApiKey && !skipGNews) {
       const { data: countData } = await supabase.rpc("get_api_call_count", {
