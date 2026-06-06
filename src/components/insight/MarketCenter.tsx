@@ -1,12 +1,45 @@
-import { marketTicks } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
+import { marketTicks as fallbackTicks } from "@/lib/mock-data";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://qxirwthrcmxkaqalzpom.supabase.co";
+
 export function MarketCenter() {
+  const [ticks, setTicks] = useState(fallbackTicks);
+
+  useEffect(() => {
+    async function fetchLiveMarkets() {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/get-markets`);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        if (data && Array.isArray(data) && data.length > 0) {
+          // Merge live prices into our fallback list order to maintain structure
+          const merged = fallbackTicks.map(fallback => {
+            const live = data.find(d => d.symbol === fallback.symbol);
+            return live ? { ...fallback, ...live } : fallback;
+          });
+          setTicks(merged);
+        }
+      } catch (err) {
+        console.error("Failed to fetch live markets", err);
+      }
+    }
+
+    fetchLiveMarkets();
+    
+    // Refresh every 60s
+    const interval = setInterval(fetchLiveMarkets, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="rounded-xl glass-card overflow-hidden">
       <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-border [&>*]:border-border">
-        {marketTicks.map((t) => {
+        {ticks.map((t) => {
           const up = t.change >= 0;
           return (
             <div key={t.symbol} className="p-3.5 group hover:bg-primary/5 transition">
