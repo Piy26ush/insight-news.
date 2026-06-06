@@ -90,6 +90,17 @@ export function TopHeader() {
           </span>
         </div>
 
+        <Link to="/search" className="md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            aria-label="Search"
+          >
+            <Search className="h-4 w-4" />
+          </Button>
+        </Link>
+
         <Button
           variant="ghost"
           size="icon"

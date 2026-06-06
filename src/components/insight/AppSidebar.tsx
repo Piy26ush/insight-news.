@@ -51,10 +51,16 @@ const personal = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isActive = (url: string) => (url === "/" ? pathname === "/" : pathname.startsWith(url));
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   const renderItem = (item: { title: string; url: string; icon: typeof Flag }) => (
     <SidebarMenuItem key={item.title}>
@@ -63,7 +69,7 @@ export function AppSidebar() {
         isActive={isActive(item.url)}
         className="data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:border-l-2 data-[active=true]:border-primary rounded-md"
       >
-        <Link to={item.url} className="flex items-center gap-3">
+        <Link to={item.url} className="flex items-center gap-3" onClick={handleLinkClick}>
           <item.icon className="h-4 w-4 shrink-0" />
           {!collapsed && <span className="text-sm">{item.title}</span>}
         </Link>
