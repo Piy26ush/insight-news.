@@ -4,11 +4,42 @@ import { Bell, RefreshCw, Search, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { toast } from "sonner";
+import { getSupabase } from "@/lib/supabase";
 
 export function TopHeader() {
   const [time, setTime] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
   const [light, setLight] = useState(false);
+
+  const handleRefresh = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    const toastId = toast.loading("Refresher desks calling 17 RSS feeds...");
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase.functions.invoke("refresh-news");
+
+      if (error) throw error;
+
+      if (data?.cooldown) {
+        toast.success("Already up to date", { id: toastId });
+      } else {
+        const inserted = data?.inserted ?? 0;
+        if (inserted > 0) {
+          toast.success(`Updated! ${inserted} new articles fetched.`, { id: toastId });
+          window.dispatchEvent(new CustomEvent("insight:refresh"));
+        } else {
+          toast.success("Already up to date", { id: toastId });
+        }
+      }
+    } catch (err) {
+      console.error("Refresh failed:", err);
+      toast.error("Failed to refresh news", { id: toastId });
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     const id = setInterval(() => setTime(new Date()), 1000);
@@ -63,10 +94,8 @@ export function TopHeader() {
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => {
-            setRefreshing(true);
-            setTimeout(() => setRefreshing(false), 900);
-          }}
+          onClick={handleRefresh}
+          disabled={refreshing}
           aria-label="Refresh"
         >
           <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />

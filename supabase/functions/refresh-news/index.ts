@@ -1,18 +1,17 @@
 // ============================================================================
-// Insight — Edge Function: fetch-news
-// Fetches news from GNews API + RSS feeds, normalizes, deduplicates, and
-// stores in the articles table. Designed to run every 53 minutes via pg_cron.
-//
-// After inserting new articles, chains to:
-//   1. summarize-article — generates AI summaries
-//   2. check-alerts      — matches against user keyword alerts
+// Insight — Edge Function: refresh-news
+// Lightweight RSS-only fetch cycle triggered on-demand by the frontend.
+// Never uses paid APIs (GNews) — completely free.
+// Protects database with a 2-minute cooldown check.
 // ============================================================================
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// ============================================================================
-// Types
-// ============================================================================
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 
 interface ArticleInsert {
   title: string;
@@ -23,19 +22,6 @@ interface ArticleInsert {
   sentiment: string | null;
   published_at: string;
   image_url: string | null;
-}
-
-interface GNewsResponse {
-  totalArticles: number;
-  articles: Array<{
-    title: string;
-    description: string;
-    content: string;
-    url: string;
-    image: string | null;
-    publishedAt: string;
-    source: { name: string; url: string };
-  }>;
 }
 
 // ============================================================================
@@ -215,15 +201,12 @@ function classifyCategory(title: string, description?: string, defaultCat?: stri
 
 function cleanDescription(html: string): string {
   if (!html) return "";
-  // Remove HTML comments
   let text = html.replace(/<!--[\s\S]*?-->/g, "");
-  // Extract text from lists or standard HTML tags
   if (text.includes("href=") && text.includes("font color=")) {
     text = text.replace(/<[^>]*>/g, " ");
   } else {
     text = text.replace(/<[^>]*>/g, "");
   }
-  // Decode HTML entities
   text = text
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
@@ -231,14 +214,10 @@ function cleanDescription(html: string): string {
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'");
-  // Normalize spaces
   return text.replace(/\s+/g, " ").trim();
 }
 
-// ============================================================================
-// RSS Feed Configuration (17 feeds total)
-// ============================================================================
-
+// RSS Feed list (matches fetch-news list)
 const RSS_FEEDS = [
   {
     name: "Google News India",
@@ -369,7 +348,6 @@ function parseRssXml(xmlText: string, feed: typeof RSS_FEEDS[number]): ArticleIn
     let displayTitle = rawTitle;
     let sourceName = parsedSource || feed.name;
 
-    // Clean source name out of the title if it follows "Headline - Source" pattern
     const lastHyphen = rawTitle.lastIndexOf(" - ");
     if (lastHyphen > 0) {
       const potentialSource = rawTitle.substring(lastHyphen + 3).trim();
@@ -395,7 +373,6 @@ function parseRssXml(xmlText: string, feed: typeof RSS_FEEDS[number]): ArticleIn
   return items;
 }
 
-// Jaccard similarity logic for fuzzy title deduplication
 function getTitleSimilarity(titleA: string, titleB: string): number {
   const normalize = (t: string) =>
     t
@@ -415,88 +392,57 @@ function getTitleSimilarity(titleA: string, titleB: string): number {
   return intersection / union;
 }
 
-const GNEWS_CATEGORIES = ["technology", "science", "business", "world", "general"];
-
 // ============================================================================
 // Main handler
 // ============================================================================
 
 Deno.serve(async (req: Request) => {
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: CORS_HEADERS });
+  }
+
   try {
-    console.log("[fetch-news] Starting news fetch cycle...");
+    console.log("[refresh-news] Starting custom refresh cycle...");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // -----------------------------------------------------------------------
+    // Cooldown check (2 minutes)
+    // -----------------------------------------------------------------------
+    const { data: latestArticle } = await supabase
+      .from("articles")
+      .select("fetched_at")
+      .order("fetched_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (latestArticle && latestArticle.fetched_at) {
+      const timeDiff = Date.now() - new Date(latestArticle.fetched_at).getTime();
+      if (timeDiff < 120000) {
+        console.log("[refresh-news] Request within 2-minute cooldown window. Skipping fetch.");
+        return new Response(
+          JSON.stringify({
+            success: true,
+            cooldown: true,
+            inserted: 0,
+            message: "Already up to date (cooldown active)",
+          }),
+          {
+            headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+            status: 200,
+          },
+        );
+      }
+    }
+
     const allArticles: ArticleInsert[] = [];
     const errors: string[] = [];
 
-    // Calculate if GNews should be skipped (before 12:00 PM IST)
-    const now = new Date();
-    const istTime = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
-    const istHour = istTime.getUTCHours();
-    const skipGNews = istHour < 12;
-
-    // -----------------------------------------------------------------------
-    // 1. Fetch from GNews (Conditional on Time + Quota)
-    // -----------------------------------------------------------------------
-    const gnewsApiKey = Deno.env.get("GNEWS_API_KEY");
-
-    if (gnewsApiKey && !skipGNews) {
-      const { data: countData } = await supabase.rpc("get_api_call_count", {
-        p_source: "gnews",
-      });
-      const gnewsCallCount = countData ?? 0;
-      console.log(`[fetch-news] GNews calls today: ${gnewsCallCount}/100`);
-
-      if (gnewsCallCount < 90) {
-        for (const category of GNEWS_CATEGORIES) {
-          try {
-            const url = `https://gnews.io/api/v4/top-headlines?category=${category}&lang=en&max=10&apikey=${gnewsApiKey}`;
-            const response = await fetch(url);
-
-            if (!response.ok) {
-              errors.push(`GNews ${category}: HTTP ${response.status}`);
-              continue;
-            }
-
-            const data: GNewsResponse = await response.json();
-            await supabase.rpc("increment_api_calls", { p_source: "gnews" });
-
-            for (const article of data.articles) {
-              allArticles.push({
-                title: article.title,
-                summary: article.description || null,
-                url: article.url,
-                source: article.source?.name ?? "GNews",
-                category: classifyCategory(article.title, article.description),
-                sentiment: null,
-                published_at: article.publishedAt,
-                image_url: article.image || null,
-              });
-            }
-
-            console.log(`[fetch-news] GNews ${category}: ${data.articles.length} articles`);
-          } catch (err) {
-            errors.push(`GNews ${category}: ${(err as Error).message}`);
-          }
-        }
-      } else {
-        console.log("[fetch-news] GNews rate limit near — skipping, falling back to RSS only");
-      }
-    } else {
-      console.log(
-        skipGNews
-          ? `[fetch-news] Morning time (IST ${istHour}:00 < 12:00) — skipping GNews to save quota`
-          : "[fetch-news] No GNEWS_API_KEY set — skipping GNews",
-      );
-    }
-
-    // -----------------------------------------------------------------------
-    // 2. Fetch all RSS feeds in parallel (Promise.allSettled)
-    // -----------------------------------------------------------------------
-    console.log(`[fetch-news] Fetching ${RSS_FEEDS.length} RSS feeds in parallel...`);
+    // Fetch all RSS feeds in parallel
+    console.log(`[refresh-news] Fetching ${RSS_FEEDS.length} RSS feeds in parallel...`);
     const feedPromises = RSS_FEEDS.map(async (feed) => {
       const response = await fetch(feed.url);
       if (!response.ok) {
@@ -512,20 +458,13 @@ Deno.serve(async (req: Request) => {
       const feed = RSS_FEEDS[index];
       if (res.status === "fulfilled") {
         allArticles.push(...res.value);
-        console.log(`[fetch-news] RSS ${feed.name}: ${res.value.length} articles`);
       } else {
         errors.push(`RSS ${feed.name}: ${res.reason.message}`);
-        console.error(`[fetch-news] Failed to fetch RSS ${feed.name}:`, res.reason);
+        console.error(`[refresh-news] Failed to fetch RSS ${feed.name}:`, res.reason);
       }
     });
 
-    // Track one general RSS increment call
-    await supabase.rpc("increment_api_calls", { p_source: "rss" });
-
-    // -----------------------------------------------------------------------
-    // 3. Deduplicate (URL-based and Fuzzy Title-based)
-    // -----------------------------------------------------------------------
-    // A. URL-based deduplication
+    // 1. URL-deduplicate
     const uniqueUrls = new Set<string>();
     const urlDeduplicated = allArticles.filter((a) => {
       if (uniqueUrls.has(a.url)) return false;
@@ -533,7 +472,7 @@ Deno.serve(async (req: Request) => {
       return true;
     });
 
-    // B. Jaccard fuzzy title-based deduplication
+    // 2. Fuzzy Title-deduplicate
     const finalArticles: ArticleInsert[] = [];
     for (const article of urlDeduplicated) {
       let isDuplicate = false;
@@ -549,7 +488,7 @@ Deno.serve(async (req: Request) => {
     }
 
     console.log(
-      `[fetch-news] Total fetched: ${allArticles.length}, URL-deduped: ${urlDeduplicated.length}, Fuzzy-deduped: ${finalArticles.length}`,
+      `[refresh-news] Total fetched: ${allArticles.length}, URL-deduped: ${urlDeduplicated.length}, Fuzzy-deduped: ${finalArticles.length}`,
     );
 
     let insertedCount = 0;
@@ -575,11 +514,9 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    console.log(`[fetch-news] Inserted/updated: ${insertedCount} articles`);
+    console.log(`[refresh-news] Custom refresh inserted/updated: ${insertedCount} articles`);
 
-    // -----------------------------------------------------------------------
-    // 4. Trigger AI Summaries (up to 10 articles)
-    // -----------------------------------------------------------------------
+    // Trigger summarization for newly inserted articles if any
     if (insertedCount > 0) {
       try {
         const { data: unsummarized } = await supabase
@@ -590,7 +527,6 @@ Deno.serve(async (req: Request) => {
           .limit(10);
 
         if (unsummarized && unsummarized.length > 0) {
-          console.log(`[fetch-news] Triggering summarization for ${unsummarized.length} articles`);
           for (const article of unsummarized) {
             try {
               fetch(`${supabaseUrl}/functions/v1/summarize-article`, {
@@ -602,18 +538,16 @@ Deno.serve(async (req: Request) => {
                 body: JSON.stringify({ article_id: article.id }),
               });
             } catch {
-              console.error(`[fetch-news] Failed to trigger summarize for ${article.id}`);
+              console.error(`[refresh-news] Failed to trigger summarize for ${article.id}`);
             }
           }
         }
       } catch (err) {
-        console.error("[fetch-news] Summarization chain error:", (err as Error).message);
+        console.error("[refresh-news] Summarization chain error:", (err as Error).message);
       }
     }
 
-    // -----------------------------------------------------------------------
-    // 5. Trigger Alerts
-    // -----------------------------------------------------------------------
+    // Trigger alerts if any articles inserted
     if (insertedCount > 0) {
       try {
         fetch(`${supabaseUrl}/functions/v1/check-alerts`, {
@@ -622,39 +556,34 @@ Deno.serve(async (req: Request) => {
             Authorization: `Bearer ${supabaseKey}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ source: "fetch-news" }),
+          body: JSON.stringify({ source: "refresh-news" }),
         });
-        console.log("[fetch-news] Triggered check-alerts");
       } catch (err) {
-        console.error("[fetch-news] check-alerts chain error:", (err as Error).message);
+        console.error("[refresh-news] check-alerts chain error:", (err as Error).message);
       }
     }
 
-    const result = {
+    const responsePayload = {
       success: true,
-      fetched: allArticles.length,
-      deduplicated: finalArticles.length,
+      cooldown: false,
       inserted: insertedCount,
+      fetched: allArticles.length,
       errors: errors.length > 0 ? errors : undefined,
-      timestamp: new Date().toISOString(),
     };
 
-    console.log("[fetch-news] Cycle complete:", JSON.stringify(result));
-
-    return new Response(JSON.stringify(result), {
-      headers: { "Content-Type": "application/json" },
+    return new Response(JSON.stringify(responsePayload), {
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (err) {
-    console.error("[fetch-news] Fatal error:", (err as Error).message);
-
+    console.error("[refresh-news] Fatal error:", (err as Error).message);
     return new Response(
       JSON.stringify({
         success: false,
         error: (err as Error).message,
       }),
       {
-        headers: { "Content-Type": "application/json" },
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
         status: 500,
       },
     );

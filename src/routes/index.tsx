@@ -50,9 +50,19 @@ function Dashboard() {
     }
     loadData();
 
-    // Poll every 60s
-    const interval = setInterval(loadData, 60000);
-    return () => clearInterval(interval);
+    // Poll every 90s
+    const interval = setInterval(loadData, 90000);
+
+    // Listen for manual refresh events
+    const handleManualRefresh = () => {
+      loadData();
+    };
+    window.addEventListener("insight:refresh", handleManualRefresh);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("insight:refresh", handleManualRefresh);
+    };
   }, []);
 
   return (
@@ -158,7 +168,7 @@ function Dashboard() {
 
       <footer className="pt-8 pb-4 border-t border-border flex items-center justify-between text-[11px] font-mono text-muted-foreground">
         <span>Insight Intelligence Terminal · v1.0</span>
-        <span>Data refreshes every 60s · {isMock ? "Mock dataset" : "Live database"}</span>
+        <span>Data refreshes every 90s · {isMock ? "Mock dataset" : "Live database"}</span>
       </footer>
     </div>
   );

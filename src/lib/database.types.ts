@@ -5,7 +5,17 @@
 // ============================================================================
 
 /** Article importance / sentiment categories */
-export type ArticleCategory = "AI" | "Tech" | "Science" | "Markets" | "Global";
+export type ArticleCategory =
+  | "AI"
+  | "Tech"
+  | "Science"
+  | "Markets"
+  | "Global"
+  | "India"
+  | "Sports"
+  | "Cybersecurity"
+  | "Vehicles"
+  | "Business";
 export type ArticleSentiment = "bullish" | "bearish" | "neutral";
 export type ThemePreference = "dark" | "light";
 

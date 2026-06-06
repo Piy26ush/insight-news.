@@ -39,16 +39,26 @@ export function CategoryView({ title, eyebrow, description, category }: Props) {
             dbCategory = "Science";
           } else if (catLower === "markets") {
             dbCategory = "Markets";
+          } else if (catLower === "india") {
+            dbCategory = "India";
+          } else if (catLower === "sports") {
+            dbCategory = "Sports";
+          } else if (catLower === "cybersecurity") {
+            dbCategory = "Cybersecurity";
+          } else if (catLower === "vehicles") {
+            dbCategory = "Vehicles";
+          } else if (catLower === "business") {
+            dbCategory = "Business";
           }
         }
 
         if (category && category.toLowerCase() === "india") {
-          // Special query for India: fetch articles containing 'India' in title or summary
+          // India: fetch matching category OR fallback to title/summary text match
           const supabase = getSupabase();
           const { data } = await supabase
             .from("articles")
             .select("*")
-            .or("title.ilike.%india%,summary.ilike.%india%")
+            .or("category.eq.India,title.ilike.%india%,summary.ilike.%india%")
             .order("published_at", { ascending: false })
             .limit(20);
           articles = data || [];
@@ -76,7 +86,22 @@ export function CategoryView({ title, eyebrow, description, category }: Props) {
         setFeed(items.length ? items : feedItems.slice(0, 5));
       }
     }
+
     loadData();
+
+    // Auto-refresh interval (every 90 seconds)
+    const interval = setInterval(loadData, 90000);
+
+    // Listen for manual refresh events
+    const handleManualRefresh = () => {
+      loadData();
+    };
+    window.addEventListener("insight:refresh", handleManualRefresh);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("insight:refresh", handleManualRefresh);
+    };
   }, [category]);
 
   return (

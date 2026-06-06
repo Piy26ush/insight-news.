@@ -40,7 +40,22 @@ function TechnologyPage() {
         setFeed(feedItems.filter((f) => f.category === "Technology" || f.category === "AI"));
       }
     }
+
     loadData();
+
+    // Auto-refresh interval (every 90 seconds)
+    const interval = setInterval(loadData, 90000);
+
+    // Listen for manual refresh events
+    const handleManualRefresh = () => {
+      loadData();
+    };
+    window.addEventListener("insight:refresh", handleManualRefresh);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("insight:refresh", handleManualRefresh);
+    };
   }, []);
 
   return (
