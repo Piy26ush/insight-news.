@@ -13,15 +13,15 @@ CREATE EXTENSION IF NOT EXISTS pg_cron;
 GRANT USAGE ON SCHEMA cron TO postgres;
 
 -- ============================================================================
--- 1. NEWS FETCH — Every 30 minutes
+-- 1. NEWS FETCH — Every 1 minute
 -- Calls the fetch-news edge function which handles:
 --   - Fetching from GNews + RSS + Currents
 --   - Deduplication and storage
 --   - Chaining to summarize-article and check-alerts
 -- ============================================================================
 SELECT cron.schedule(
-  'fetch-news-every-30min',
-  '*/30 * * * *',    -- every 30 minutes
+  'fetch-news-every-1min',
+  '* * * * *',    -- every 1 minute
   $$
   SELECT
     net.http_post(
