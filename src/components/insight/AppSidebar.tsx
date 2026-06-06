@@ -73,17 +73,19 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
+      <SidebarHeader className="border-b border-sidebar-border px-4 py-3">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/40 shadow-glow">
-            <Sparkles className="h-4 w-4 text-primary-foreground" />
-          </div>
-          {!collapsed && (
-            <div className="flex flex-col leading-tight">
-              <span className="text-sm font-semibold tracking-tight">Insight</span>
-              <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
-                Intel Terminal
-              </span>
+          {collapsed ? (
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-secondary/10 overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="Insight"
+                className="h-14 w-auto max-w-none object-left -translate-x-1.5"
+              />
+            </div>
+          ) : (
+            <div className="flex items-center h-8 overflow-hidden">
+              <img src="/logo.png" alt="Insight" className="h-16 w-auto -my-4 object-left" />
             </div>
           )}
         </Link>
