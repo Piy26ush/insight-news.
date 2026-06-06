@@ -80,12 +80,12 @@ export function AppSidebar() {
               <img
                 src="/logo.png"
                 alt="Insight"
-                className="h-14 w-auto max-w-none object-left -translate-x-1.5"
+                className="h-8 w-auto max-w-none object-left"
               />
             </div>
           ) : (
-            <div className="flex items-center h-8 overflow-hidden">
-              <img src="/logo.png" alt="Insight" className="h-16 w-auto -my-4 object-left" />
+            <div className="flex items-center h-8">
+              <img src="/logo.png" alt="Insight" className="h-6 w-auto object-left" />
             </div>
           )}
         </Link>
