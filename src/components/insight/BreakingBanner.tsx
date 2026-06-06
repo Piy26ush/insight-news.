@@ -1,8 +1,40 @@
+import { useState, useEffect } from "react";
+import { getArticles, mapArticleToFeedItem } from "@/lib/supabase";
 import { breakingTicker } from "@/lib/mock-data";
 import { Zap } from "lucide-react";
 
 export function BreakingBanner() {
-  const items = [...breakingTicker, ...breakingTicker];
+  const [items, setItems] = useState<Array<{ tag: string; text: string; time: string }>>([]);
+
+  useEffect(() => {
+    async function loadBreakingNews() {
+      try {
+        const liveArticles = await getArticles(undefined, 10);
+        if (liveArticles && liveArticles.length > 0) {
+          const mapped = liveArticles.map(mapArticleToFeedItem).map(item => ({
+            tag: item.category.toUpperCase(),
+            text: item.headline,
+            time: item.time
+          }));
+          // Repeat to ensure marquee looping works cleanly
+          setItems([...mapped, ...mapped]);
+        } else {
+          setItems([...breakingTicker, ...breakingTicker]);
+        }
+      } catch (err) {
+        console.error("Failed to load breaking news", err);
+        setItems([...breakingTicker, ...breakingTicker]);
+      }
+    }
+    loadBreakingNews();
+    
+    // Refresh every 60s
+    const interval = setInterval(loadBreakingNews, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const displayItems = items.length > 0 ? items : [...breakingTicker, ...breakingTicker];
+
   return (
     <div className="relative overflow-hidden rounded-xl glass-card shadow-elevated">
       <div className="absolute inset-y-0 left-0 z-10 flex items-center gap-2 pl-4 pr-6 bg-gradient-to-r from-critical/90 via-critical/80 to-transparent">
@@ -17,7 +49,7 @@ export function BreakingBanner() {
 
       <div className="py-3 pl-36 pr-4 overflow-hidden">
         <div className="flex gap-12 whitespace-nowrap animate-ticker">
-          {items.map((item, i) => (
+          {displayItems.map((item, i) => (
             <div key={i} className="flex items-center gap-3 text-sm">
               <span className="text-[10px] font-mono uppercase tracking-wider text-primary px-1.5 py-0.5 rounded border border-primary/30 bg-primary/5">
                 {item.tag}
