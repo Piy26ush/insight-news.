@@ -62,6 +62,7 @@
 ### Enable Required Extensions
 
 Go to **Database → Extensions** and enable:
+
 - `uuid-ossp` (should be enabled by default)
 - `pg_cron` (for scheduled jobs)
 - `pg_net` (for HTTP calls from cron jobs)
@@ -213,11 +214,11 @@ If pg_cron doesn't work, use [cron-job.org](https://cron-job.org):
 1. Sign up (free — 4 cron jobs)
 2. Create these jobs:
 
-| Job | URL | Schedule | Headers |
-|-----|-----|----------|---------|
-| Fetch News | `https://YOUR_PROJECT.supabase.co/functions/v1/fetch-news` | Every 30 min | `Authorization: Bearer SERVICE_ROLE_KEY` |
+| Job          | URL                                                         | Schedule          | Headers                                  |
+| ------------ | ----------------------------------------------------------- | ----------------- | ---------------------------------------- |
+| Fetch News   | `https://YOUR_PROJECT.supabase.co/functions/v1/fetch-news`  | Every 30 min      | `Authorization: Bearer SERVICE_ROLE_KEY` |
 | Daily Digest | `https://YOUR_PROJECT.supabase.co/functions/v1/send-digest` | Daily 2:30 AM UTC | `Authorization: Bearer SERVICE_ROLE_KEY` |
-| Keep Alive | `https://YOUR_PROJECT.supabase.co/functions/v1/ping` | Every 5 days | None |
+| Keep Alive   | `https://YOUR_PROJECT.supabase.co/functions/v1/ping`        | Every 5 days      | None                                     |
 
 ---
 
@@ -258,7 +259,7 @@ Add this script tag in your root HTML or `__root.tsx` head:
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
+  OneSignalDeferred.push(async function (OneSignal) {
     await OneSignal.init({
       appId: "YOUR_ONESIGNAL_APP_ID",
     });
@@ -322,26 +323,27 @@ Supabase free tier pauses projects after 7 days of inactivity.
 ## 10. Environment Variables Checklist
 
 ### Supabase Edge Function Secrets
+
 Set via `supabase secrets set KEY=VALUE`:
 
-| Variable | Source | Required |
-|----------|--------|----------|
-| `SUPABASE_URL` | Supabase Dashboard | ✅ Yes |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Dashboard | ✅ Yes |
-| `GNEWS_API_KEY` | gnews.io | ✅ Yes |
-| `CURRENTS_API_KEY` | currentsapi.services | ❌ Optional |
-| `ANTHROPIC_API_KEY` | console.anthropic.com | ❌ Optional |
-| `GROQ_API_KEY` | console.groq.com | ✅ Recommended |
-| `ONESIGNAL_APP_ID` | onesignal.com | ❌ Optional |
-| `ONESIGNAL_API_KEY` | onesignal.com | ❌ Optional |
-| `RESEND_API_KEY` | resend.com | ❌ Optional |
+| Variable                    | Source                | Required       |
+| --------------------------- | --------------------- | -------------- |
+| `SUPABASE_URL`              | Supabase Dashboard    | ✅ Yes         |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Dashboard    | ✅ Yes         |
+| `GNEWS_API_KEY`             | gnews.io              | ✅ Yes         |
+| `CURRENTS_API_KEY`          | currentsapi.services  | ❌ Optional    |
+| `ANTHROPIC_API_KEY`         | console.anthropic.com | ❌ Optional    |
+| `GROQ_API_KEY`              | console.groq.com      | ✅ Recommended |
+| `ONESIGNAL_APP_ID`          | onesignal.com         | ❌ Optional    |
+| `ONESIGNAL_API_KEY`         | onesignal.com         | ❌ Optional    |
+| `RESEND_API_KEY`            | resend.com            | ❌ Optional    |
 
 ### Frontend Environment (Vercel/Lovable)
 
-| Variable | Source | Required |
-|----------|--------|----------|
-| `VITE_SUPABASE_URL` | Supabase Dashboard | ✅ Yes |
-| `VITE_SUPABASE_ANON_KEY` | Supabase Dashboard | ✅ Yes |
+| Variable                 | Source             | Required |
+| ------------------------ | ------------------ | -------- |
+| `VITE_SUPABASE_URL`      | Supabase Dashboard | ✅ Yes   |
+| `VITE_SUPABASE_ANON_KEY` | Supabase Dashboard | ✅ Yes   |
 
 ---
 
@@ -422,13 +424,13 @@ curl "https://YOUR_PROJECT.supabase.co/functions/v1/get-articles?limit=5"
 
 ## Free Tier Limits Reference
 
-| Service | Free Tier | Our Usage |
-|---------|-----------|-----------|
-| Supabase | 500 MB DB, 2 GB bandwidth, 500K edge invocations | Well within limits |
-| GNews | 100 requests/day | ~48/day (every 30 min) |
-| Currents | 600 requests/day | ~48/day (backup only) |
-| Groq | Unlimited (rate limited) | ~50-100 calls/day |
-| Anthropic | $5 free credit | Optional |
-| OneSignal | 10K subscribers, unlimited notifications | Personal use |
-| Resend | 3000 emails/month | 30/month (daily digest) |
-| cron-job.org | 4 free cron jobs | 3 jobs |
+| Service      | Free Tier                                        | Our Usage               |
+| ------------ | ------------------------------------------------ | ----------------------- |
+| Supabase     | 500 MB DB, 2 GB bandwidth, 500K edge invocations | Well within limits      |
+| GNews        | 100 requests/day                                 | ~48/day (every 30 min)  |
+| Currents     | 600 requests/day                                 | ~48/day (backup only)   |
+| Groq         | Unlimited (rate limited)                         | ~50-100 calls/day       |
+| Anthropic    | $5 free credit                                   | Optional                |
+| OneSignal    | 10K subscribers, unlimited notifications         | Personal use            |
+| Resend       | 3000 emails/month                                | 30/month (daily digest) |
+| cron-job.org | 4 free cron jobs                                 | 3 jobs                  |

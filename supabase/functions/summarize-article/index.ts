@@ -19,11 +19,7 @@ interface AIResult {
   fallback: boolean;
 }
 
-async function callClaude(
-  prompt: string,
-  apiKey: string,
-  maxTokens: number
-): Promise<string> {
+async function callClaude(prompt: string, apiKey: string, maxTokens: number): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
 
@@ -49,7 +45,7 @@ async function callClaude(
 
     const data = await response.json();
     const text = data.content?.find(
-      (b: { type: string; text?: string }) => b.type === "text"
+      (b: { type: string; text?: string }) => b.type === "text",
     )?.text;
 
     if (!text) throw new Error("Claude returned no text");
@@ -59,11 +55,7 @@ async function callClaude(
   }
 }
 
-async function callGroq(
-  prompt: string,
-  apiKey: string,
-  maxTokens: number
-): Promise<string> {
+async function callGroq(prompt: string, apiKey: string, maxTokens: number): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
 
@@ -178,10 +170,10 @@ Deno.serve(async (req: Request) => {
     const { article_id } = await req.json();
 
     if (!article_id) {
-      return new Response(
-        JSON.stringify({ error: "article_id is required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "article_id is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     console.log(`[summarize] Processing article: ${article_id}`);
@@ -200,26 +192,26 @@ Deno.serve(async (req: Request) => {
 
     if (fetchError || !article) {
       console.error("[summarize] Article not found:", fetchError?.message);
-      return new Response(
-        JSON.stringify({ error: "Article not found" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Article not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Skip if already summarized (but don't skip if it is just a Google News HTML list)
-    const isHtmlList = article.summary && (
-      article.summary.includes("<ol>") ||
-      article.summary.includes("&lt;ol&gt;") ||
-      article.summary.includes("<li>") ||
-      article.summary.includes("&lt;li&gt;")
-    );
+    const isHtmlList =
+      article.summary &&
+      (article.summary.includes("<ol>") ||
+        article.summary.includes("&lt;ol&gt;") ||
+        article.summary.includes("<li>") ||
+        article.summary.includes("&lt;li&gt;"));
 
     if (article.summary && article.summary.length > 50 && !isHtmlList) {
       console.log("[summarize] Article already has a good summary, skipping");
-      return new Response(
-        JSON.stringify({ status: "skipped", reason: "already summarized" }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ status: "skipped", reason: "already summarized" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // -----------------------------------------------------------------------
@@ -286,10 +278,10 @@ Deno.serve(async (req: Request) => {
 
     if (updateError) {
       console.error("[summarize] Failed to save summary:", updateError.message);
-      return new Response(
-        JSON.stringify({ error: "Failed to save summary" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Failed to save summary" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const result = {
@@ -310,9 +302,9 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     console.error("[summarize] Fatal error:", (err as Error).message);
 
-    return new Response(
-      JSON.stringify({ error: (err as Error).message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: (err as Error).message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 });

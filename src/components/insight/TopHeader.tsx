@@ -19,8 +19,17 @@ export function TopHeader() {
     document.documentElement.classList.toggle("light", light);
   }, [light]);
 
-  const fmt = time.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-  const date = time.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+  const fmt = time.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const date = time.toLocaleDateString("en-IN", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
 
   return (
     <header className="sticky top-0 z-30 h-14 border-b border-border glass-panel">
@@ -36,26 +45,37 @@ export function TopHeader() {
               className="pl-9 pr-16 h-9 bg-secondary/50 border-border cursor-pointer focus-visible:ring-1"
             />
           </Link>
-          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-background/40">⌘K</kbd>
+          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-background/40">
+            ⌘K
+          </kbd>
         </div>
 
         <div className="flex-1 md:hidden" />
 
         <div className="hidden lg:flex flex-col items-end leading-tight font-mono mr-2">
           <span className="text-sm tabular-nums text-foreground">{fmt}</span>
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{date} · IST</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            {date} · IST
+          </span>
         </div>
 
         <Button
-          variant="ghost" size="icon" className="h-8 w-8"
-          onClick={() => { setRefreshing(true); setTimeout(() => setRefreshing(false), 900); }}
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => {
+            setRefreshing(true);
+            setTimeout(() => setRefreshing(false), 900);
+          }}
           aria-label="Refresh"
         >
           <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
         </Button>
 
         <Button
-          variant="ghost" size="icon" className="h-8 w-8"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
           onClick={() => setLight((l) => !l)}
           aria-label="Toggle theme"
         >
@@ -63,7 +83,12 @@ export function TopHeader() {
         </Button>
 
         <Link to="/notifications">
-          <Button variant="ghost" size="icon" className="h-8 w-8 relative" aria-label="Notifications">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 relative"
+            aria-label="Notifications"
+          >
             <Bell className="h-4 w-4" />
             <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-critical animate-pulse-dot" />
           </Button>

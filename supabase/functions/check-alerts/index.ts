@@ -28,17 +28,17 @@ Deno.serve(async (req: Request) => {
 
     if (alertsError) {
       console.error("[check-alerts] Failed to fetch alerts:", alertsError.message);
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch alerts" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Failed to fetch alerts" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     if (!alerts || alerts.length === 0) {
       console.log("[check-alerts] No active alerts configured");
       return new Response(
         JSON.stringify({ success: true, matches: 0, reason: "no active alerts" }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -56,21 +56,23 @@ Deno.serve(async (req: Request) => {
 
     if (articlesError) {
       console.error("[check-alerts] Failed to fetch articles:", articlesError.message);
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch recent articles" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Failed to fetch recent articles" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     if (!recentArticles || recentArticles.length === 0) {
       console.log("[check-alerts] No recent articles to check");
       return new Response(
         JSON.stringify({ success: true, matches: 0, reason: "no recent articles" }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
 
-    console.log(`[check-alerts] Checking ${recentArticles.length} recent articles against ${alerts.length} alerts`);
+    console.log(
+      `[check-alerts] Checking ${recentArticles.length} recent articles against ${alerts.length} alerts`,
+    );
 
     // -----------------------------------------------------------------------
     // 3. Match keywords against article titles and summaries
@@ -100,7 +102,7 @@ Deno.serve(async (req: Request) => {
           matches.push({
             user_id: alert.user_id,
             article_id: article.id,
-            keyword: alert.keyword,  // store original casing
+            keyword: alert.keyword, // store original casing
           });
         }
       }
@@ -116,19 +118,17 @@ Deno.serve(async (req: Request) => {
     if (matches.length > 0) {
       // Insert one by one to handle unique constraint violations gracefully
       for (const match of matches) {
-        const { error: insertError } = await supabase
-          .from("alerts_triggered")
-          .upsert(
-            {
-              user_id: match.user_id,
-              article_id: match.article_id,
-              keyword: match.keyword,
-            },
-            {
-              onConflict: "user_id,article_id,keyword",
-              ignoreDuplicates: true,
-            }
-          );
+        const { error: insertError } = await supabase.from("alerts_triggered").upsert(
+          {
+            user_id: match.user_id,
+            article_id: match.article_id,
+            keyword: match.keyword,
+          },
+          {
+            onConflict: "user_id,article_id,keyword",
+            ignoreDuplicates: true,
+          },
+        );
 
         if (!insertError) {
           insertedCount++;
@@ -172,9 +172,9 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     console.error("[check-alerts] Fatal error:", (err as Error).message);
 
-    return new Response(
-      JSON.stringify({ error: (err as Error).message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: (err as Error).message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 });

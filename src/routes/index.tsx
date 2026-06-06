@@ -17,7 +17,11 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Insight — Intelligence Dashboard" },
-      { name: "description", content: "Everything important. Nothing unnecessary. Real-time intelligence across markets, technology, science, and global events." },
+      {
+        name: "description",
+        content:
+          "Everything important. Nothing unnecessary. Real-time intelligence across markets, technology, science, and global events.",
+      },
     ],
   }),
   component: Dashboard,
@@ -45,7 +49,7 @@ function Dashboard() {
       }
     }
     loadData();
-    
+
     // Poll every 60s
     const interval = setInterval(loadData, 60000);
     return () => clearInterval(interval);
@@ -73,18 +77,32 @@ function Dashboard() {
 
       {/* Today's overview */}
       <section>
-        <SectionHeader eyebrow="Today's overview" title="Pulse of the world" description="Aggregated signal across every desk in the last 24 hours." />
+        <SectionHeader
+          eyebrow="Today's overview"
+          title="Pulse of the world"
+          description="Aggregated signal across every desk in the last 24 hours."
+        />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {overviewStats.map((s) => <StatCard key={s.label} {...s} />)}
+          {overviewStats.map((s) => (
+            <StatCard key={s.label} {...s} />
+          ))}
         </div>
       </section>
 
       {/* Two-column live feed + side rail */}
       <div className="grid lg:grid-cols-3 gap-6">
         <section className="lg:col-span-2">
-          <SectionHeader live eyebrow="Live feed" title="Intelligence stream" description="Twitter-style chronological feed, scored for importance." to="/breaking" />
+          <SectionHeader
+            live
+            eyebrow="Live feed"
+            title="Intelligence stream"
+            description="Twitter-style chronological feed, scored for importance."
+            to="/breaking"
+          />
           <div className="space-y-3">
-            {feed.map((f) => <FeedCard key={f.id} item={f} />)}
+            {feed.map((f) => (
+              <FeedCard key={f.id} item={f} />
+            ))}
           </div>
         </section>
 
@@ -102,7 +120,11 @@ function Dashboard() {
 
       {/* Global snapshot */}
       <section>
-        <SectionHeader eyebrow="Global snapshot" title="Regions at a glance" description="One headline per region, with activity intensity." />
+        <SectionHeader
+          eyebrow="Global snapshot"
+          title="Regions at a glance"
+          description="One headline per region, with activity intensity."
+        />
         <GlobalSnapshot />
       </section>
 
@@ -125,7 +147,11 @@ function Dashboard() {
           <VehicleList />
         </section>
         <section className="lg:col-span-2">
-          <SectionHeader eyebrow="Top 10 today" title="Most important events globally" description="Ranked by impact across markets, geopolitics, and technology." />
+          <SectionHeader
+            eyebrow="Top 10 today"
+            title="Most important events globally"
+            description="Ranked by impact across markets, geopolitics, and technology."
+          />
           <ImportantEvents />
         </section>
       </div>
@@ -137,4 +163,3 @@ function Dashboard() {
     </div>
   );
 }
-

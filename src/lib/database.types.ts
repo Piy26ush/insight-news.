@@ -22,8 +22,8 @@ export interface Article {
   source: string;
   category: ArticleCategory;
   sentiment: ArticleSentiment | null;
-  published_at: string;       // ISO 8601 timestamptz
-  fetched_at: string;         // ISO 8601 timestamptz
+  published_at: string; // ISO 8601 timestamptz
+  fetched_at: string; // ISO 8601 timestamptz
   image_url: string | null;
 }
 
@@ -69,7 +69,7 @@ export interface AlertTriggered {
 export interface ApiCallLog {
   id: string;
   source: string;
-  call_date: string;           // DATE as string (YYYY-MM-DD)
+  call_date: string; // DATE as string (YYYY-MM-DD)
   call_count: number;
   last_called_at: string;
 }

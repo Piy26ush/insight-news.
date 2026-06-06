@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { PageShell } from "@/components/insight/PageShell";
 import { FeedCard } from "@/components/insight/FeedCard";
 import { feedItems } from "@/lib/mock-data";
-import { getArticles as fetchArticlesFromDb, mapArticleToFeedItem, getSupabase } from "@/lib/supabase";
+import {
+  getArticles as fetchArticlesFromDb,
+  mapArticleToFeedItem,
+  getSupabase,
+} from "@/lib/supabase";
 import type { FeedItem } from "@/lib/mock-data";
 import type { ArticleCategory } from "@/lib/database.types";
 
@@ -20,7 +24,7 @@ export function CategoryView({ title, eyebrow, description, category }: Props) {
     async function loadData() {
       try {
         let articles = [];
-        
+
         // Map frontend categories to database categories
         let dbCategory: ArticleCategory | undefined = undefined;
         if (category) {
@@ -78,7 +82,9 @@ export function CategoryView({ title, eyebrow, description, category }: Props) {
   return (
     <PageShell eyebrow={eyebrow} title={title} description={description}>
       <div className="space-y-3">
-        {feed.map((f) => <FeedCard key={f.id} item={f} />)}
+        {feed.map((f) => (
+          <FeedCard key={f.id} item={f} />
+        ))}
       </div>
     </PageShell>
   );

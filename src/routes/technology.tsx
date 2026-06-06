@@ -9,7 +9,12 @@ import { getArticles as fetchArticlesFromDb, mapArticleToFeedItem } from "@/lib/
 import type { FeedItem } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/technology")({
-  head: () => ({ meta: [{ title: "Technology & AI — Insight" }, { name: "description", content: "AI, software, hardware, startups." }] }),
+  head: () => ({
+    meta: [
+      { title: "Technology & AI — Insight" },
+      { name: "description", content: "AI, software, hardware, startups." },
+    ],
+  }),
   component: TechnologyPage,
 });
 
@@ -39,12 +44,18 @@ function TechnologyPage() {
   }, []);
 
   return (
-    <PageShell eyebrow="Technology & AI" title="What's shipping in tech" description="AI breakthroughs, product launches, funding, and platform shifts.">
+    <PageShell
+      eyebrow="Technology & AI"
+      title="What's shipping in tech"
+      description="AI breakthroughs, product launches, funding, and platform shifts."
+    >
       <TechCards />
       <div className="mt-8">
         <SectionHeader eyebrow="Tech wire" title="Deeper signal" />
         <div className="space-y-3">
-          {feed.map((f) => <FeedCard key={f.id} item={f} />)}
+          {feed.map((f) => (
+            <FeedCard key={f.id} item={f} />
+          ))}
         </div>
       </div>
     </PageShell>

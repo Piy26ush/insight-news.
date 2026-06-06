@@ -3,11 +3,26 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { FeedItem } from "@/lib/mock-data";
 
-const importanceStyles: Record<FeedItem["importance"], { dot: string; label: string; text: string }> = {
-  critical: { dot: "bg-critical shadow-[0_0_10px_oklch(0.65_0.24_22)]", label: "Critical", text: "text-critical" },
-  high:     { dot: "bg-warning shadow-[0_0_10px_oklch(0.82_0.16_88)]",  label: "High",     text: "text-warning" },
-  medium:   { dot: "bg-primary shadow-[0_0_10px_oklch(0.68_0.18_250)]", label: "Medium",   text: "text-primary" },
-  low:      { dot: "bg-muted-foreground", label: "Low", text: "text-muted-foreground" },
+const importanceStyles: Record<
+  FeedItem["importance"],
+  { dot: string; label: string; text: string }
+> = {
+  critical: {
+    dot: "bg-critical shadow-[0_0_10px_oklch(0.65_0.24_22)]",
+    label: "Critical",
+    text: "text-critical",
+  },
+  high: {
+    dot: "bg-warning shadow-[0_0_10px_oklch(0.82_0.16_88)]",
+    label: "High",
+    text: "text-warning",
+  },
+  medium: {
+    dot: "bg-primary shadow-[0_0_10px_oklch(0.68_0.18_250)]",
+    label: "Medium",
+    text: "text-primary",
+  },
+  low: { dot: "bg-muted-foreground", label: "Low", text: "text-muted-foreground" },
 };
 
 function parseGoogleNewsSummary(summary: string | null) {
@@ -28,14 +43,17 @@ function parseGoogleNewsSummary(summary: string | null) {
   if (olIndex === -1 && !decoded.includes("<li>")) {
     return {
       text: summary,
-      related: []
+      related: [],
     };
   }
 
   // Extract any text before the <ol> tag
   let text = "";
   if (olIndex > 0) {
-    text = decoded.substring(0, olIndex).replace(/<[^>]*>/g, "").trim();
+    text = decoded
+      .substring(0, olIndex)
+      .replace(/<[^>]*>/g, "")
+      .trim();
   }
 
   // Extract list items <li>...</li>
@@ -45,11 +63,11 @@ function parseGoogleNewsSummary(summary: string | null) {
 
   while ((match = liRegex.exec(decoded)) !== null) {
     const liContent = match[1];
-    
+
     // Extract href
     const hrefMatch = liContent.match(/href="([^"]*)"/i);
     const url = hrefMatch ? hrefMatch[1] : "";
-    
+
     // Extract title (text inside the <a> tag)
     const titleMatch = liContent.match(/<a[^>]*>([\s\S]*?)<\/a>/i);
     let title = titleMatch ? titleMatch[1].trim() : "";
@@ -69,13 +87,13 @@ function parseGoogleNewsSummary(summary: string | null) {
   if (related.length === 0) {
     return {
       text: decoded.replace(/<[^>]*>/g, "").trim(),
-      related: []
+      related: [],
     };
   }
 
   return {
     text,
-    related
+    related,
   };
 }
 
@@ -88,7 +106,10 @@ export function FeedCard({ item }: { item: FeedItem }) {
       <div className="flex items-start gap-3">
         <div className="flex flex-col items-center pt-1">
           <span className={cn("h-2 w-2 rounded-full animate-pulse-dot", imp.dot)} />
-          <span className="mt-2 text-[9px] font-mono tabular-nums text-muted-foreground rotate-180" style={{ writingMode: "vertical-rl" }}>
+          <span
+            className="mt-2 text-[9px] font-mono tabular-nums text-muted-foreground rotate-180"
+            style={{ writingMode: "vertical-rl" }}
+          >
             {item.score}
           </span>
         </div>
@@ -110,7 +131,12 @@ export function FeedCard({ item }: { item: FeedItem }) {
 
           <h3 className="mt-1.5 text-[15px] font-semibold leading-snug text-foreground group-hover:text-primary transition">
             {item.url ? (
-              <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:underline inline-flex items-center gap-1.5 align-middle">
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline inline-flex items-center gap-1.5 align-middle"
+              >
                 <span>{item.headline}</span>
                 <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-muted-foreground" />
               </a>
@@ -119,7 +145,9 @@ export function FeedCard({ item }: { item: FeedItem }) {
             )}
           </h3>
           {parsed.text && (
-            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground line-clamp-2">{parsed.text}</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground line-clamp-2">
+              {parsed.text}
+            </p>
           )}
 
           {parsed.related.length > 0 && (
@@ -140,7 +168,8 @@ export function FeedCard({ item }: { item: FeedItem }) {
                       {rel.title}
                       {rel.source && (
                         <span className="text-[10px] text-muted-foreground/70 font-medium">
-                          {" "}· {rel.source}
+                          {" "}
+                          · {rel.source}
                         </span>
                       )}
                     </a>
@@ -151,10 +180,18 @@ export function FeedCard({ item }: { item: FeedItem }) {
           )}
 
           <div className="mt-3 flex items-center gap-1">
-            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+            >
               <Bookmark className="h-3.5 w-3.5" /> Save
             </Button>
-            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+            >
               <Share2 className="h-3.5 w-3.5" /> Share
             </Button>
             <div className="ml-auto flex items-center gap-2 text-[10px] font-mono text-muted-foreground">

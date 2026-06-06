@@ -11,10 +11,10 @@ export function BreakingBanner() {
       try {
         const liveArticles = await getArticles(undefined, 10);
         if (liveArticles && liveArticles.length > 0) {
-          const mapped = liveArticles.map(mapArticleToFeedItem).map(item => ({
+          const mapped = liveArticles.map(mapArticleToFeedItem).map((item) => ({
             tag: item.category.toUpperCase(),
             text: item.headline,
-            time: item.time
+            time: item.time,
           }));
           // Repeat to ensure marquee looping works cleanly
           setItems([...mapped, ...mapped]);
@@ -27,7 +27,7 @@ export function BreakingBanner() {
       }
     }
     loadBreakingNews();
-    
+
     // Refresh every 60s
     const interval = setInterval(loadBreakingNews, 60000);
     return () => clearInterval(interval);
@@ -44,7 +44,9 @@ export function BreakingBanner() {
             <Zap className="h-4 w-4 text-critical-foreground" />
           </span>
         </div>
-        <span className="text-[11px] font-bold uppercase tracking-widest text-critical-foreground font-mono">Breaking</span>
+        <span className="text-[11px] font-bold uppercase tracking-widest text-critical-foreground font-mono">
+          Breaking
+        </span>
       </div>
 
       <div className="py-3 pl-36 pr-4 overflow-hidden">

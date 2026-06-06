@@ -18,14 +18,14 @@ interface MarketSymbol {
 }
 
 const SYMBOLS: MarketSymbol[] = [
-  { symbol: "NIFTY",  ySymbol: "^NSEI",   name: "Nifty 50" },
-  { symbol: "SENSEX", ySymbol: "^BSESN",  name: "Sensex" },
-  { symbol: "NDX",    ySymbol: "^NDX",    name: "Nasdaq" },
-  { symbol: "DJI",    ySymbol: "^DJI",    name: "Dow Jones" },
-  { symbol: "GOLD",   ySymbol: "GC=F",    name: "Gold",       currency: "$/oz" },
-  { symbol: "SILVER", ySymbol: "SI=F",    name: "Silver",     currency: "$/oz" },
-  { symbol: "CRUDE",  ySymbol: "CL=F",    name: "Crude Oil",  currency: "$/bbl" },
-  { symbol: "USDINR", ySymbol: "INR=X",   name: "USD / INR" },
+  { symbol: "NIFTY", ySymbol: "^NSEI", name: "Nifty 50" },
+  { symbol: "SENSEX", ySymbol: "^BSESN", name: "Sensex" },
+  { symbol: "NDX", ySymbol: "^NDX", name: "Nasdaq" },
+  { symbol: "DJI", ySymbol: "^DJI", name: "Dow Jones" },
+  { symbol: "GOLD", ySymbol: "GC=F", name: "Gold", currency: "$/oz" },
+  { symbol: "SILVER", ySymbol: "SI=F", name: "Silver", currency: "$/oz" },
+  { symbol: "CRUDE", ySymbol: "CL=F", name: "Crude Oil", currency: "$/bbl" },
+  { symbol: "USDINR", ySymbol: "INR=X", name: "USD / INR" },
 ];
 
 Deno.serve(async (req: Request) => {
@@ -71,7 +71,10 @@ Deno.serve(async (req: Request) => {
           currency: item.currency,
         };
       } catch (err) {
-        console.error(`[get-markets] Failed to fetch ${item.symbol} (${item.ySymbol}):`, (err as Error).message);
+        console.error(
+          `[get-markets] Failed to fetch ${item.symbol} (${item.ySymbol}):`,
+          (err as Error).message,
+        );
         return null;
       }
     });
@@ -79,7 +82,9 @@ Deno.serve(async (req: Request) => {
     const results = await Promise.all(promises);
     const validResults = results.filter((r) => r !== null);
 
-    console.log(`[get-markets] Successfully fetched ${validResults.length}/${SYMBOLS.length} indices`);
+    console.log(
+      `[get-markets] Successfully fetched ${validResults.length}/${SYMBOLS.length} indices`,
+    );
 
     return new Response(JSON.stringify(validResults), {
       headers: {

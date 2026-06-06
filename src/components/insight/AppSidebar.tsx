@@ -1,11 +1,31 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, Zap, Flag, Globe2, LineChart, Cpu, Atom, Car,
-  Briefcase, Shield, Trophy, Bookmark, Settings as SettingsIcon, Sparkles,
+  LayoutDashboard,
+  Zap,
+  Flag,
+  Globe2,
+  LineChart,
+  Cpu,
+  Atom,
+  Car,
+  Briefcase,
+  Shield,
+  Trophy,
+  Bookmark,
+  Settings as SettingsIcon,
+  Sparkles,
 } from "lucide-react";
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
-  SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 const primary = [
@@ -61,7 +81,9 @@ export function AppSidebar() {
           {!collapsed && (
             <div className="flex flex-col leading-tight">
               <span className="text-sm font-semibold tracking-tight">Insight</span>
-              <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">Intel Terminal</span>
+              <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
+                Intel Terminal
+              </span>
             </div>
           )}
         </Link>
@@ -75,14 +97,22 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          {!collapsed && <SidebarGroupLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-mono">Sections</SidebarGroupLabel>}
+          {!collapsed && (
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-mono">
+              Sections
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
             <SidebarMenu>{sections.map(renderItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
-          {!collapsed && <SidebarGroupLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-mono">Personal</SidebarGroupLabel>}
+          {!collapsed && (
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-mono">
+              Personal
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
             <SidebarMenu>{personal.map(renderItem)}</SidebarMenu>
           </SidebarGroupContent>

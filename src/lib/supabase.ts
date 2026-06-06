@@ -32,7 +32,7 @@ export function createSupabaseClient(): SupabaseClient<Database> {
   if (!url || !key) {
     throw new Error(
       "Missing Supabase environment variables. " +
-      "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file."
+        "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.",
     );
   }
 
@@ -56,7 +56,7 @@ export function createSupabaseAdmin(): SupabaseClient<Database> {
   if (!url || !key) {
     throw new Error(
       "Missing Supabase admin environment variables. " +
-      "Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your edge function secrets."
+        "Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your edge function secrets.",
     );
   }
 
@@ -98,7 +98,7 @@ export function getSupabase(): SupabaseClient<Database> {
 export async function getArticles(
   category?: ArticleCategory,
   limit: number = 20,
-  offset: number = 0
+  offset: number = 0,
 ): Promise<Article[]> {
   const supabase = getSupabase();
 
@@ -132,11 +132,7 @@ export async function getArticles(
 export async function getArticleById(articleId: string): Promise<Article | null> {
   const supabase = getSupabase();
 
-  const { data, error } = await supabase
-    .from("articles")
-    .select("*")
-    .eq("id", articleId)
-    .single();
+  const { data, error } = await supabase.from("articles").select("*").eq("id", articleId).single();
 
   if (error) {
     console.error("[getArticleById] Error:", error.message);
@@ -158,18 +154,12 @@ export async function getArticleById(articleId: string): Promise<Article | null>
  * @param articleId - UUID of the article to save
  * @returns The SavedArticle row, or null on error
  */
-export async function saveArticle(
-  userId: string,
-  articleId: string
-): Promise<SavedArticle | null> {
+export async function saveArticle(userId: string, articleId: string): Promise<SavedArticle | null> {
   const supabase = getSupabase();
 
   const { data, error } = await supabase
     .from("saved_articles")
-    .upsert(
-      { user_id: userId, article_id: articleId },
-      { onConflict: "user_id,article_id" }
-    )
+    .upsert({ user_id: userId, article_id: articleId }, { onConflict: "user_id,article_id" })
     .select()
     .single();
 
@@ -188,10 +178,7 @@ export async function saveArticle(
  * @param articleId - UUID of the article to unsave
  * @returns true if deleted, false on error
  */
-export async function unsaveArticle(
-  userId: string,
-  articleId: string
-): Promise<boolean> {
+export async function unsaveArticle(userId: string, articleId: string): Promise<boolean> {
   const supabase = getSupabase();
 
   const { error } = await supabase
@@ -264,16 +251,10 @@ export async function getUserAlerts(userId: string): Promise<UserAlert[]> {
  * @param alert - The alert to create (user_id, keyword, category)
  * @returns The created UserAlert or null on error
  */
-export async function createAlert(
-  alert: UserAlertInsert
-): Promise<UserAlert | null> {
+export async function createAlert(alert: UserAlertInsert): Promise<UserAlert | null> {
   const supabase = getSupabase();
 
-  const { data, error } = await supabase
-    .from("user_alerts")
-    .insert(alert)
-    .select()
-    .single();
+  const { data, error } = await supabase.from("user_alerts").insert(alert).select().single();
 
   if (error) {
     console.error("[createAlert] Error:", error.message);
@@ -290,10 +271,7 @@ export async function createAlert(
  * @param isActive - New active status
  * @returns true if updated, false on error
  */
-export async function toggleAlert(
-  alertId: string,
-  isActive: boolean
-): Promise<boolean> {
+export async function toggleAlert(alertId: string, isActive: boolean): Promise<boolean> {
   const supabase = getSupabase();
 
   const { error } = await supabase
@@ -318,10 +296,7 @@ export async function toggleAlert(
 export async function deleteAlert(alertId: string): Promise<boolean> {
   const supabase = getSupabase();
 
-  const { error } = await supabase
-    .from("user_alerts")
-    .delete()
-    .eq("id", alertId);
+  const { error } = await supabase.from("user_alerts").delete().eq("id", alertId);
 
   if (error) {
     console.error("[deleteAlert] Error:", error.message);
@@ -341,9 +316,7 @@ export async function deleteAlert(alertId: string): Promise<boolean> {
  * @param userId - UUID of the authenticated user
  * @returns UserPreferences or null
  */
-export async function getUserPreferences(
-  userId: string
-): Promise<UserPreferences | null> {
+export async function getUserPreferences(userId: string): Promise<UserPreferences | null> {
   const supabase = getSupabase();
 
   const { data, error } = await supabase
@@ -370,7 +343,7 @@ export async function getUserPreferences(
  * @returns The saved UserPreferences or null on error
  */
 export async function upsertUserPreferences(
-  prefs: UserPreferencesInsert
+  prefs: UserPreferencesInsert,
 ): Promise<UserPreferences | null> {
   const supabase = getSupabase();
 
@@ -431,4 +404,3 @@ export function mapArticleToFeedItem(article: Article): FeedItem {
     url: article.url,
   };
 }
-

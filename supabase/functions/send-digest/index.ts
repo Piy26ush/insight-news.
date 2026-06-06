@@ -23,7 +23,7 @@ Deno.serve(async (req: Request) => {
       console.log("[send-digest] RESEND_API_KEY not set — skipping digest email");
       return new Response(
         JSON.stringify({ success: true, sent: 0, reason: "Resend not configured" }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -37,17 +37,17 @@ Deno.serve(async (req: Request) => {
 
     if (usersError) {
       console.error("[send-digest] Failed to fetch users:", usersError.message);
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch users" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Failed to fetch users" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     if (!users || users.length === 0) {
       console.log("[send-digest] No users with digest enabled");
       return new Response(
         JSON.stringify({ success: true, sent: 0, reason: "no users with digest enabled" }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -56,7 +56,12 @@ Deno.serve(async (req: Request) => {
     // -----------------------------------------------------------------------
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const categories = ["AI", "Tech", "Science", "Markets", "Global"];
-    const topArticles: Array<{ title: string; summary: string | null; url: string; category: string }> = [];
+    const topArticles: Array<{
+      title: string;
+      summary: string | null;
+      url: string;
+      category: string;
+    }> = [];
 
     for (const category of categories) {
       const { data: articles } = await supabase
@@ -76,7 +81,7 @@ Deno.serve(async (req: Request) => {
       console.log("[send-digest] No articles from the last 24 hours");
       return new Response(
         JSON.stringify({ success: true, sent: 0, reason: "no recent articles" }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -132,7 +137,7 @@ Deno.serve(async (req: Request) => {
             Authorization: `Bearer ${resendApiKey}`,
           },
           body: JSON.stringify({
-            from: "Insight <onboarding@resend.dev>",  // Resend's free tier sender
+            from: "Insight <onboarding@resend.dev>", // Resend's free tier sender
             to: [authUser.user.email],
             subject: `Insight Daily Digest — ${today}`,
             text: emailBody,
@@ -147,7 +152,10 @@ Deno.serve(async (req: Request) => {
           console.error(`[send-digest] Resend error for ${authUser.user.email}: ${errorBody}`);
         }
       } catch (err) {
-        console.error(`[send-digest] Error sending to user ${user.user_id}:`, (err as Error).message);
+        console.error(
+          `[send-digest] Error sending to user ${user.user_id}:`,
+          (err as Error).message,
+        );
       }
     }
 
@@ -167,9 +175,9 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     console.error("[send-digest] Fatal error:", (err as Error).message);
 
-    return new Response(
-      JSON.stringify({ error: (err as Error).message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: (err as Error).message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 });

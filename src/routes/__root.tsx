@@ -81,7 +81,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Insight — Intelligence Terminal" },
-      { name: "description", content: "Everything important. Nothing unnecessary. A personal intelligence dashboard for what's happening in the world right now." },
+      {
+        name: "description",
+        content:
+          "Everything important. Nothing unnecessary. A personal intelligence dashboard for what's happening in the world right now.",
+      },
       { name: "author", content: "Insight" },
       { property: "og:title", content: "Insight — Intelligence Terminal" },
       { property: "og:description", content: "Everything important. Nothing unnecessary." },
@@ -92,7 +96,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,

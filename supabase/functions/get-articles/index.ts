@@ -11,10 +11,10 @@ Deno.serve(async (req: Request) => {
   try {
     // Only allow GET requests
     if (req.method !== "GET") {
-      return new Response(
-        JSON.stringify({ error: "Method not allowed" }),
-        { status: 405, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Method not allowed" }), {
+        status: 405,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Parse query parameters from URL
@@ -34,7 +34,7 @@ Deno.serve(async (req: Request) => {
     // Build query
     let query = supabase
       .from("articles")
-      .select("*", { count: "exact" })  // include total count for pagination
+      .select("*", { count: "exact" }) // include total count for pagination
       .order("published_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -47,10 +47,10 @@ Deno.serve(async (req: Request) => {
 
     if (error) {
       console.error("[get-articles] Query error:", error.message);
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch articles" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Failed to fetch articles" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Build response with pagination metadata
@@ -79,12 +79,9 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     console.error("[get-articles] Fatal error:", (err as Error).message);
 
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 });

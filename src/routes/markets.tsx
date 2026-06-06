@@ -9,7 +9,12 @@ import { getArticles as fetchArticlesFromDb, mapArticleToFeedItem } from "@/lib/
 import type { FeedItem } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/markets")({
-  head: () => ({ meta: [{ title: "Markets — Insight" }, { name: "description", content: "Live markets dashboard." }] }),
+  head: () => ({
+    meta: [
+      { title: "Markets — Insight" },
+      { name: "description", content: "Live markets dashboard." },
+    ],
+  }),
   component: MarketsPage,
 });
 
@@ -34,12 +39,18 @@ function MarketsPage() {
   }, []);
 
   return (
-    <PageShell eyebrow="Live markets" title="Market center" description="Indices, commodities, FX — live tape with intraday sparklines.">
+    <PageShell
+      eyebrow="Live markets"
+      title="Market center"
+      description="Indices, commodities, FX — live tape with intraday sparklines."
+    >
       <MarketCenter />
       <div className="mt-8">
         <SectionHeader live eyebrow="Market wire" title="Market-moving stories" />
         <div className="space-y-3">
-          {feed.map((f) => <FeedCard key={f.id} item={f} />)}
+          {feed.map((f) => (
+            <FeedCard key={f.id} item={f} />
+          ))}
         </div>
       </div>
     </PageShell>

@@ -24,17 +24,19 @@ export function SectionHeader({ eyebrow, title, description, action, live, to }:
         <h2 className="mt-1 text-lg font-semibold tracking-tight text-foreground">{title}</h2>
         {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
-      {action ?? (
-        to ? (
-          <Link to={to} className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition">
+      {action ??
+        (to ? (
+          <Link
+            to={to}
+            className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition"
+          >
             View all <ArrowRight className="h-3 w-3" />
           </Link>
         ) : (
           <button className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition">
             View all <ArrowRight className="h-3 w-3" />
           </button>
-        )
-      )}
+        ))}
     </div>
   );
 }

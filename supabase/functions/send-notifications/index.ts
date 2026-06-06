@@ -25,7 +25,7 @@ Deno.serve(async (req: Request) => {
       console.log("[send-notifications] OneSignal not configured — skipping push notifications");
       return new Response(
         JSON.stringify({ success: true, sent: 0, reason: "OneSignal not configured" }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -34,31 +34,33 @@ Deno.serve(async (req: Request) => {
     // -----------------------------------------------------------------------
     const { data: pendingAlerts, error: fetchError } = await supabase
       .from("alerts_triggered")
-      .select(`
+      .select(
+        `
         id,
         user_id,
         article_id,
         keyword,
         triggered_at
-      `)
+      `,
+      )
       .is("notified_at", null)
       .order("triggered_at", { ascending: true })
-      .limit(50);  // Process max 50 at a time
+      .limit(50); // Process max 50 at a time
 
     if (fetchError) {
       console.error("[send-notifications] Failed to fetch pending alerts:", fetchError.message);
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch pending alerts" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Failed to fetch pending alerts" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     if (!pendingAlerts || pendingAlerts.length === 0) {
       console.log("[send-notifications] No pending notifications");
-      return new Response(
-        JSON.stringify({ success: true, sent: 0 }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: true, sent: 0 }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     console.log(`[send-notifications] Processing ${pendingAlerts.length} pending alerts`);
@@ -84,9 +86,8 @@ Deno.serve(async (req: Request) => {
         }
 
         // Truncate title to 100 characters for the notification body
-        const body = article.title.length > 100
-          ? article.title.substring(0, 97) + "..."
-          : article.title;
+        const body =
+          article.title.length > 100 ? article.title.substring(0, 97) + "..." : article.title;
 
         // -----------------------------------------------------------------------
         // 3. Send push notification via OneSignal REST API
@@ -120,7 +121,9 @@ Deno.serve(async (req: Request) => {
         }
 
         const notifResult = await notifResponse.json();
-        console.log(`[send-notifications] Sent notification ${notifResult.id} for keyword "${alert.keyword}"`);
+        console.log(
+          `[send-notifications] Sent notification ${notifResult.id} for keyword "${alert.keyword}"`,
+        );
 
         // -----------------------------------------------------------------------
         // 4. Mark alert as notified
@@ -136,7 +139,10 @@ Deno.serve(async (req: Request) => {
           sentCount++;
         }
       } catch (err) {
-        console.error(`[send-notifications] Error processing alert ${alert.id}:`, (err as Error).message);
+        console.error(
+          `[send-notifications] Error processing alert ${alert.id}:`,
+          (err as Error).message,
+        );
         errorCount++;
       }
     }
@@ -157,9 +163,9 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     console.error("[send-notifications] Fatal error:", (err as Error).message);
 
-    return new Response(
-      JSON.stringify({ error: (err as Error).message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: (err as Error).message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 });

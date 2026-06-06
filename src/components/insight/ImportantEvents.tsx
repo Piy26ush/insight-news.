@@ -15,8 +15,12 @@ export function ImportantEvents() {
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-primary">{e.category}</span>
-                  <h3 className="mt-1 text-base font-semibold leading-snug group-hover:text-primary transition">{e.headline}</h3>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-primary">
+                    {e.category}
+                  </span>
+                  <h3 className="mt-1 text-base font-semibold leading-snug group-hover:text-primary transition">
+                    {e.headline}
+                  </h3>
                   <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{e.summary}</p>
                 </div>
                 <ImpactGauge value={e.impact} />
@@ -30,16 +34,28 @@ export function ImportantEvents() {
 }
 
 function ImpactGauge({ value }: { value: number }) {
-  const r = 18; const c = 2 * Math.PI * r;
+  const r = 18;
+  const c = 2 * Math.PI * r;
   const off = c - (value / 100) * c;
   return (
     <div className="relative shrink-0 w-12 h-12">
       <svg viewBox="0 0 44 44" className="w-full h-full -rotate-90">
         <circle cx="22" cy="22" r={r} stroke="oklch(1 0 0 / 8%)" strokeWidth="3" fill="none" />
-        <circle cx="22" cy="22" r={r} stroke="oklch(0.68 0.18 250)" strokeWidth="3" fill="none"
-          strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round" />
+        <circle
+          cx="22"
+          cy="22"
+          r={r}
+          stroke="oklch(0.68 0.18 250)"
+          strokeWidth="3"
+          fill="none"
+          strokeDasharray={c}
+          strokeDashoffset={off}
+          strokeLinecap="round"
+        />
       </svg>
-      <div className="absolute inset-0 grid place-items-center text-[11px] font-mono tabular-nums font-semibold">{value}</div>
+      <div className="absolute inset-0 grid place-items-center text-[11px] font-mono tabular-nums font-semibold">
+        {value}
+      </div>
     </div>
   );
 }

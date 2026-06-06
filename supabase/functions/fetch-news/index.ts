@@ -57,28 +57,85 @@ interface RSSJsonResponse {
 
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
   AI: [
-    "artificial intelligence", "machine learning", "deep learning", "llm",
-    "gpt", "claude", "openai", "anthropic", "generative ai", "chatbot",
-    "ai agent", "agentic", "neural network", "transformer",
+    "artificial intelligence",
+    "machine learning",
+    "deep learning",
+    "llm",
+    "gpt",
+    "claude",
+    "openai",
+    "anthropic",
+    "generative ai",
+    "chatbot",
+    "ai agent",
+    "agentic",
+    "neural network",
+    "transformer",
   ],
   Science: [
-    "nasa", "isro", "spacex", "space", "astronomy", "exoplanet", "jwst",
-    "crispr", "gene therapy", "quantum", "fusion", "climate change",
-    "neuroscience", "biology", "physics",
+    "nasa",
+    "isro",
+    "spacex",
+    "space",
+    "astronomy",
+    "exoplanet",
+    "jwst",
+    "crispr",
+    "gene therapy",
+    "quantum",
+    "fusion",
+    "climate change",
+    "neuroscience",
+    "biology",
+    "physics",
   ],
   Markets: [
-    "stock", "market", "nasdaq", "nifty", "sensex", "fed", "interest rate",
-    "inflation", "ipo", "earnings", "crude oil", "gold price", "bitcoin",
-    "crypto", "rbi", "monetary policy",
+    "stock",
+    "market",
+    "nasdaq",
+    "nifty",
+    "sensex",
+    "fed",
+    "interest rate",
+    "inflation",
+    "ipo",
+    "earnings",
+    "crude oil",
+    "gold price",
+    "bitcoin",
+    "crypto",
+    "rbi",
+    "monetary policy",
   ],
   Tech: [
-    "apple", "google", "microsoft", "nvidia", "semiconductor", "chip",
-    "software", "startup", "cybersecurity", "hack", "zero-day",
-    "electric vehicle", "ev", "5g", "cloud computing",
+    "apple",
+    "google",
+    "microsoft",
+    "nvidia",
+    "semiconductor",
+    "chip",
+    "software",
+    "startup",
+    "cybersecurity",
+    "hack",
+    "zero-day",
+    "electric vehicle",
+    "ev",
+    "5g",
+    "cloud computing",
   ],
   Global: [
-    "geopolitics", "sanctions", "nato", "united nations", "g20", "election",
-    "war", "conflict", "ceasefire", "opec", "energy crisis",
+    "geopolitics",
+    "sanctions",
+    "nato",
+    "united nations",
+    "g20",
+    "election",
+    "war",
+    "conflict",
+    "ceasefire",
+    "opec",
+    "energy crisis",
   ],
 };
 
@@ -114,10 +171,22 @@ function stripHtml(html: string): string {
 // ============================================================================
 
 const RSS_FEEDS = [
-  { name: "Google News Tech", url: "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en" },
-  { name: "Google News Science", url: "https://news.google.com/rss/headlines/section/topic/SCIENCE?hl=en-US&gl=US&ceid=US:en" },
-  { name: "Google News Business", url: "https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-US&gl=US&ceid=US:en" },
-  { name: "Google News World", url: "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en" },
+  {
+    name: "Google News Tech",
+    url: "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en",
+  },
+  {
+    name: "Google News Science",
+    url: "https://news.google.com/rss/headlines/section/topic/SCIENCE?hl=en-US&gl=US&ceid=US:en",
+  },
+  {
+    name: "Google News Business",
+    url: "https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-US&gl=US&ceid=US:en",
+  },
+  {
+    name: "Google News World",
+    url: "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en",
+  },
   { name: "TechCrunch", url: "https://techcrunch.com/feed/" },
   { name: "NASA", url: "https://www.nasa.gov/rss/dyn/breaking_news.rss" },
 ];
@@ -136,7 +205,9 @@ function parseRssXml(xmlText: string): Array<{
     const content = match[1];
 
     const getTagValue = (tag: string) => {
-      const cdataRegex = new RegExp(`<${tag}>(?:<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>|([\\s\\S]*?))</${tag}>`);
+      const cdataRegex = new RegExp(
+        `<${tag}>(?:<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>|([\\s\\S]*?))</${tag}>`,
+      );
       const m = content.match(cdataRegex);
       if (m) return (m[1] || m[2] || "").trim();
       return "";
@@ -151,7 +222,7 @@ function parseRssXml(xmlText: string): Array<{
     const mediaMatch = content.match(/<media:content[^>]*url="([^"]*)"/i);
     const enclosureMatch = content.match(/<enclosure[^>]*url="([^"]*)"/i);
     const imgTagMatch = content.match(/<img[^>]*src="([^"]*)"/i);
-    
+
     if (enclosureMatch) image = enclosureMatch[1];
     else if (mediaMatch) image = mediaMatch[1];
     else if (imgTagMatch) image = imgTagMatch[1];
@@ -162,13 +233,12 @@ function parseRssXml(xmlText: string): Array<{
         link,
         description,
         pubDate,
-        image
+        image,
       });
     }
   }
   return items;
 }
-
 
 // ============================================================================
 // GNews fetch categories
@@ -340,7 +410,9 @@ Deno.serve(async (req: Request) => {
       return true;
     });
 
-    console.log(`[fetch-news] Total fetched: ${allArticles.length}, deduplicated: ${deduplicated.length}`);
+    console.log(
+      `[fetch-news] Total fetched: ${allArticles.length}, deduplicated: ${deduplicated.length}`,
+    );
 
     let insertedCount = 0;
 
@@ -354,7 +426,7 @@ Deno.serve(async (req: Request) => {
           .from("articles")
           .upsert(batch, {
             onConflict: "url",
-            ignoreDuplicates: true,  // skip existing URLs silently
+            ignoreDuplicates: true, // skip existing URLs silently
           })
           .select("id");
 
@@ -449,7 +521,7 @@ Deno.serve(async (req: Request) => {
       {
         headers: { "Content-Type": "application/json" },
         status: 500,
-      }
+      },
     );
   }
 });

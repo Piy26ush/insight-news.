@@ -11,8 +11,8 @@
 /** Result from an AI completion call */
 export interface AIResult {
   text: string;
-  model: string;       // which model actually produced the result
-  fallback: boolean;   // true if Groq was used as fallback
+  model: string; // which model actually produced the result
+  fallback: boolean; // true if Groq was used as fallback
 }
 
 // ============================================================================
@@ -31,7 +31,7 @@ export interface AIResult {
 async function callClaude(
   prompt: string,
   apiKey: string,
-  maxTokens: number = 300
+  maxTokens: number = 300,
 ): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
@@ -47,9 +47,7 @@ async function callClaude(
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
         max_tokens: maxTokens,
-        messages: [
-          { role: "user", content: prompt },
-        ],
+        messages: [{ role: "user", content: prompt }],
       }),
       signal: controller.signal,
     });
@@ -63,7 +61,7 @@ async function callClaude(
 
     // Extract text from the response content blocks
     const textBlock = data.content?.find(
-      (block: { type: string; text?: string }) => block.type === "text"
+      (block: { type: string; text?: string }) => block.type === "text",
     );
 
     if (!textBlock?.text) {
@@ -90,11 +88,7 @@ async function callClaude(
  * @returns The text response
  * @throws Error if the API call fails
  */
-async function callGroq(
-  prompt: string,
-  apiKey: string,
-  maxTokens: number = 300
-): Promise<string> {
+async function callGroq(prompt: string, apiKey: string, maxTokens: number = 300): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
@@ -107,11 +101,9 @@ async function callGroq(
       },
       body: JSON.stringify({
         model: "llama3-8b-8192",
-        messages: [
-          { role: "user", content: prompt },
-        ],
+        messages: [{ role: "user", content: prompt }],
         max_tokens: maxTokens,
-        temperature: 0.3,  // low temp for factual summaries
+        temperature: 0.3, // low temp for factual summaries
       }),
       signal: controller.signal,
     });
@@ -150,10 +142,7 @@ async function callGroq(
  * @param maxTokens - Max tokens for the response (default 300)
  * @returns AIResult with the text, model used, and whether it was a fallback
  */
-export async function tryClaudeOrGroq(
-  prompt: string,
-  maxTokens: number = 300
-): Promise<AIResult> {
+export async function tryClaudeOrGroq(prompt: string, maxTokens: number = 300): Promise<AIResult> {
   const claudeKey = Deno.env.get("ANTHROPIC_API_KEY");
   const groqKey = Deno.env.get("GROQ_API_KEY");
 
@@ -182,7 +171,7 @@ export async function tryClaudeOrGroq(
     } catch (err) {
       console.error("[ai] Groq also failed:", (err as Error).message);
       throw new Error(
-        `Both AI providers failed. Claude: ${claudeKey ? "error" : "no key"}. Groq: ${(err as Error).message}`
+        `Both AI providers failed. Claude: ${claudeKey ? "error" : "no key"}. Groq: ${(err as Error).message}`,
       );
     }
   }
